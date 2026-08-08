@@ -10,6 +10,7 @@ async function start() {
   }
 
   console.log(fs.existsSync(path.resolve(tmpPath, 'anonymous_token'))? "[LOG] Created tmp file":"[ERROR] Werried")
+  throw "OK, running"
   
   // 启动时更新anonymous_token
   const generateConfig = require('./generateConfig')

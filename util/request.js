@@ -39,7 +39,7 @@ async function initConfig() {
   isInitialized = true
 }
 const { URLSearchParams, URL } = require('url')
-request.debug = true // 开启可看到更详细信息
+// request.debug = true // 开启可看到更详细信息
 
 const chooseUserAgent = (ua = false) => {
   const userAgentMap = {
@@ -55,6 +55,7 @@ const chooseUserAgent = (ua = false) => {
 const createRequest = (method, url, data = {}, options) => {
   return new Promise(async (resolve, reject) => {
     await initConfig()
+    console.log(method, url, JSON.stringify(data))
     let headers = { 'User-Agent': chooseUserAgent(options.ua) }
     options.headers = options.headers || {}
     headers = {

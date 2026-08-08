@@ -20,9 +20,6 @@ async function start() {
   // 启动时更新anonymous_token
   const generateConfig = require('./generateConfig')
   await generateConfig()
-  require('./server').serveNcmApi({
-    checkVersion: true,
-  })
 }
 start()
 

@@ -9,19 +9,35 @@ const fs = require('fs')
 const path = require('path')
 const tmpPath = require('os').tmpdir()
 
-async function start() {
-  // 检测是否存在 anonymous_token 文件,没有则生成
-  if (!fs.existsSync(path.resolve(tmpPath, 'anonymous_token'))) {
-    fs.writeFileSync(path.resolve(tmpPath, 'anonymous_token'), '', 'utf-8')
+// 1. 【同步】第一步：先强行确保 /tmp/anonymous_token 文件存在，防止后面读文件崩掉
+const tokenFilePath = path.resolve(tmpPath, 'anonymous_token')
+try {
+  if (!fs.existsSync(tokenFilePath)) {
+    fs.writeFileSync(tokenFilePath, '', 'utf-8')
+    console.log('[LOG] Created tmp file')
   }
-
-  console.log(fs.existsSync(path.resolve(tmpPath, 'anonymous_token'))? "[LOG] Created tmp file":"[ERROR] Werried")
-  
-  // 启动时更新anonymous_token
-  const generateConfig = require('./generateConfig')
-  await generateConfig()
+} catch (e) {
+  console.error('[ERROR] Failed to write tmp file:', e)
 }
-start()
+
+// 2. 【初始化函数】：把 generateConfig 的 await 逻辑封装起来
+let anonymous_token = ''
+let isInitialized = false
+
+async function initConfig() {
+  if (isInitialized) return
+  try {
+    const generateConfig = require('./generateConfig')
+    await generateConfig()
+    // 初始化完成后，读取真正的 token 内容
+    if (fs.existsSync(tokenFilePath)) {
+      anonymous_token = fs.readFileSync(tokenFilePath, 'utf-8')
+    }
+  } catch (e) {
+    console.error('[ERROR] generateConfig failed:', e)
+  }
+  isInitialized = true
+}
 
 const anonymous_token = fs.readFileSync(
   path.resolve(tmpPath, './anonymous_token'),
@@ -42,7 +58,8 @@ const chooseUserAgent = (ua = false) => {
   return userAgentMap.pc
 }
 const createRequest = (method, url, data = {}, options) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
+    await initConfig()
     let headers = { 'User-Agent': chooseUserAgent(options.ua) }
     options.headers = options.headers || {}
     headers = {

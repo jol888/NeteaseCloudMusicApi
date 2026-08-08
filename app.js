@@ -8,6 +8,9 @@ async function start() {
   if (!fs.existsSync(path.resolve(tmpPath, 'anonymous_token'))) {
     fs.writeFileSync(path.resolve(tmpPath, 'anonymous_token'), '', 'utf-8')
   }
+
+  console.log(fs.existsSync(path.resolve(tmpPath, 'anonymous_token'))? "[LOG] Created tmp file":"[ERROR] Werried")
+  
   // 启动时更新anonymous_token
   const generateConfig = require('./generateConfig')
   await generateConfig()
